@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     CurrentWeatherData cwd;
     cwd.city = "Zenica";
-    cwd.icon = QPixmap(":/images/star_hollow.png");
+    cwd.icon = QPixmap("C:/Users/ajdeJ/Downloads/Edin-Tabak-2.png");
     cwd.condition = "Sunny";
     cwd.temperature = 25.0;
     updateCurrentWeather(cwd);
@@ -127,7 +127,7 @@ void MainWindow::writeFavoriteCities(const QStringList &cities) {
 void MainWindow::onSearchBarPressed() {
     QString searchText = ui->searchBar->text().trimmed();
     if (!searchText.isEmpty()) {
-        api->makeRequest(searchText);
+        api->makeRequestforLatandLong(searchText);
     }
 }
 
