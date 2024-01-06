@@ -2,7 +2,7 @@
 #include "./ui_mainwindow.h"
 #include <QPixmap>
 #include <QScrollBar>
-
+#include <QFile>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     favoriteButton = new QPushButton();
     favoriteButton->setIcon(QIcon(":/icons/star_hollow.png"));
     ui->cityLabelLayout->addWidget(favoriteButton);
-
+    scrollStep = 150;
     connect(favoriteButton, &QPushButton::clicked, this, &MainWindow::toggleFavorite);
     connect(ui->leftScrollButton, &QToolButton::clicked, this, &MainWindow::scrollLeft);
     connect(ui->rightScrollButton, &QToolButton::clicked, this, &MainWindow::scrollRight);
@@ -20,23 +20,86 @@ MainWindow::MainWindow(QWidget *parent)
     setupSevenDayForecastUi();
     setupHourlyForecast();
     setupWeatherDetailsUi();
-
+    loadFavoritesIntoDropdown();
     CurrentWeatherData cwd;
     cwd.city = "Zenica";
     cwd.icon = QPixmap("C:/Users/ajdeJ/Downloads/Edin-Tabak-2.png");
     cwd.condition = "Sunny";
     cwd.temperature = 25.0;
     updateCurrentWeather(cwd);
-}
-
-void MainWindow::toggleFavorite(){
 
 }
+
+void MainWindow::toggleFavorite() {
+    bool isFavorite = favoriteButton->property("isFavorite").toBool();
+
+    isFavorite = !isFavorite;
+    favoriteButton->setProperty("isFavorite", isFavorite);
+
+    favoriteButton->setIcon(QIcon(isFavorite ? ":/icons/star_filled.png" : ":/icons/star_hollow.png"));
+
+    if (isFavorite) {
+        addCityToFavorites(currentCity);
+    } else {
+        removeCityFromFavorites(currentCity);
+    }
+
+    loadFavoritesIntoDropdown();
+}
+
+void MainWindow::addCityToFavorites(const QString &city) {
+    QStringList favorites = getFavoriteCities();
+    if (!favorites.contains(city)) {
+        favorites.append(city);
+        writeFavoriteCities(favorites);
+    }
+}
+
+void MainWindow::removeCityFromFavorites(const QString &city) {
+    QStringList favorites = getFavoriteCities();
+    favorites.removeAll(city);
+    writeFavoriteCities(favorites);
+}
+
+void MainWindow::loadFavoritesIntoDropdown() {
+    QStringList favoriteCities = getFavoriteCities();
+    ui->favouriteCities->clear();
+    ui->favouriteCities->addItems(favoriteCities);
+}
+
+QStringList MainWindow::getFavoriteCities() {
+    QFile file("favorites.txt");
+    QStringList cities;
+    if (file.exists() && file.open(QIODevice::ReadOnly)) {
+        QTextStream in(&file);
+        QString line;
+        while (in.readLineInto(&line)) {
+            if (!line.trimmed().isEmpty()) {
+                cities << line.trimmed();
+            }
+        }
+        file.close();
+    }
+    return cities;
+}
+
+
+void MainWindow::writeFavoriteCities(const QStringList &cities) {
+    QFile file("favorites.txt");
+    if (file.open(QIODevice::WriteOnly)) {
+        QTextStream out(&file);
+        for (const QString &city : cities) {
+            out << city << '\n';
+        }
+        file.close();
+    }
+}
+
 
 void MainWindow::onSearchBarPressed() {
     QString searchText = ui->searchBar->text().trimmed();
     if (!searchText.isEmpty()) {
-        searchCity(searchText);
+     //   searchCity(searchText);
     }
 }
 

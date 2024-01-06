@@ -51,6 +51,11 @@ private slots:
     void updateCurrentWeather(const CurrentWeatherData& data);
     void toggleFavorite();
     void onSearchBarPressed();
+    void addCityToFavorites(const QString &city);
+    void removeCityFromFavorites(const QString &city);
+    QStringList getFavoriteCities();
+    void writeFavoriteCities(const QStringList &cities);
+    void loadFavoritesIntoDropdown();
 private:
     Ui::MainWindow *ui;
     int scrollStep;
@@ -70,9 +75,7 @@ private:
     QWidget* createDetailWidget(const QString &titleText, const QString &valueText,
                                 const QIcon &icon, QLabel **valueLabelPtr);
     void setupUiComponents();
-    QStringList getFavoriteCities();
-    void addCityToFavorites(const QString &city);
-    void removeCityFromFavorites(const QString &city);
+    QString currentCity;
 
 };
 #endif // MAINWINDOW_H
