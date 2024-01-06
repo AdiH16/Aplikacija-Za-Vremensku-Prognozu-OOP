@@ -3,14 +3,30 @@
 #include <QPixmap>
 #include <QScrollBar>
 #include <QFile>
+#include "weatherapi.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
     favoriteButton = new QPushButton();
-    favoriteButton->setIcon(QIcon(":/icons/star_hollow.png"));
+    favoriteButton->setIcon(QIcon(":/images/star_hollow.png"));
+    favoriteButton->setIconSize(QSize(28, 28));
+    favoriteButton->setFixedSize(QSize(34, 34));
+
+    ui->cityLabelLayout->setAlignment(favoriteButton, Qt::AlignVCenter);
     ui->cityLabelLayout->addWidget(favoriteButton);
+
+    favoriteButton->setStyleSheet("QPushButton {"
+                                  "border: none;"
+                                  "background-color: transparent;"
+                                  "}"
+                                  "QPushButton:hover {"
+                                  "background-color: rgba(255, 255, 255, 20);"
+                                  "}"
+                                  "QPushButton:pressed {"
+                                  "background-color: rgba(255, 255, 255, 20);"
+                                  "}");
     scrollStep = 150;
     connect(favoriteButton, &QPushButton::clicked, this, &MainWindow::toggleFavorite);
     connect(ui->leftScrollButton, &QToolButton::clicked, this, &MainWindow::scrollLeft);
@@ -21,9 +37,20 @@ MainWindow::MainWindow(QWidget *parent)
     setupHourlyForecast();
     setupWeatherDetailsUi();
     loadFavoritesIntoDropdown();
+
+    currentCity = "Zenica";
+
+    QStringList favorites = getFavoriteCities();
+    if (favorites.contains(currentCity)) {
+        favoriteButton->setIcon(QIcon(":/images/star_filled.png"));
+    }
+
+    api = new WeatherApi(this);
+
+
     CurrentWeatherData cwd;
     cwd.city = "Zenica";
-    cwd.icon = QPixmap("C:/Users/ajdeJ/Downloads/Edin-Tabak-2.png");
+    cwd.icon = QPixmap(":/images/star_hollow.png");
     cwd.condition = "Sunny";
     cwd.temperature = 25.0;
     updateCurrentWeather(cwd);
@@ -31,12 +58,13 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::toggleFavorite() {
+
     bool isFavorite = favoriteButton->property("isFavorite").toBool();
 
     isFavorite = !isFavorite;
     favoriteButton->setProperty("isFavorite", isFavorite);
 
-    favoriteButton->setIcon(QIcon(isFavorite ? ":/icons/star_filled.png" : ":/icons/star_hollow.png"));
+    favoriteButton->setIcon(QIcon(isFavorite ? ":/images/star_filled.png" : ":/images/star_hollow.png"));
 
     if (isFavorite) {
         addCityToFavorites(currentCity);
@@ -99,9 +127,10 @@ void MainWindow::writeFavoriteCities(const QStringList &cities) {
 void MainWindow::onSearchBarPressed() {
     QString searchText = ui->searchBar->text().trimmed();
     if (!searchText.isEmpty()) {
-     //   searchCity(searchText);
+        api->makeRequest(searchText);
     }
 }
+
 
 void MainWindow::setupSevenDayForecastUi() {
     QGridLayout *gridLayout = new QGridLayout(ui->forecastGrid);

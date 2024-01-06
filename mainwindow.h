@@ -10,6 +10,7 @@
 #include <QComboBox>
 #include <QStringList>
 #include <QString>
+#include "weatherapi.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -76,6 +77,6 @@ private:
                                 const QIcon &icon, QLabel **valueLabelPtr);
     void setupUiComponents();
     QString currentCity;
-
+    WeatherApi *api;
 };
 #endif // MAINWINDOW_H
