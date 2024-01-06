@@ -3,13 +3,13 @@
 #include <QPixmap>
 #include <QScrollBar>
 #include <QFile>
-
+#include "weatherapi.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
     favoriteButton = new QPushButton();
-    favoriteButton->setIcon(QIcon(":/icons/star_hollow.png"));
+    favoriteButton->setIcon(QIcon(":/images/star_hollow.png"));
     ui->cityLabelLayout->addWidget(favoriteButton);
     scrollStep = 150;
     connect(favoriteButton, &QPushButton::clicked, this, &MainWindow::toggleFavorite);
@@ -23,11 +23,11 @@ MainWindow::MainWindow(QWidget *parent)
     loadFavoritesIntoDropdown();
     CurrentWeatherData cwd;
     cwd.city = "Zenica";
-    cwd.icon = QPixmap("C:/Users/ajdeJ/Downloads/Edin-Tabak-2.png");
+    cwd.icon = QPixmap(":/images.qrc/star_hollow.png");
     cwd.condition = "Sunny";
     cwd.temperature = 25.0;
     updateCurrentWeather(cwd);
-
+    api = new WeatherApi(this);
 }
 
 void MainWindow::toggleFavorite() {
@@ -99,9 +99,10 @@ void MainWindow::writeFavoriteCities(const QStringList &cities) {
 void MainWindow::onSearchBarPressed() {
     QString searchText = ui->searchBar->text().trimmed();
     if (!searchText.isEmpty()) {
-     //   searchCity(searchText);
+        api->makeRequestforLatandLong(searchText);
     }
 }
+
 
 void MainWindow::setupSevenDayForecastUi() {
     QGridLayout *gridLayout = new QGridLayout(ui->forecastGrid);
