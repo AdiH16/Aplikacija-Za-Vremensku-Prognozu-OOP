@@ -4,6 +4,7 @@
 #include <QScrollBar>
 #include <QFile>
 #include "weatherapi.h"
+#include "weatherdata.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -27,34 +28,51 @@ MainWindow::MainWindow(QWidget *parent)
                                   "QPushButton:pressed {"
                                   "background-color: rgba(255, 255, 255, 20);"
                                   "}");
-    scrollStep = 150;
-    connect(favoriteButton, &QPushButton::clicked, this, &MainWindow::toggleFavorite);
-    connect(ui->leftScrollButton, &QToolButton::clicked, this, &MainWindow::scrollLeft);
-    connect(ui->rightScrollButton, &QToolButton::clicked, this, &MainWindow::scrollRight);
-    connect(ui->searchBar, &QLineEdit::returnPressed, this, &MainWindow::onSearchBarPressed);
+    scrollStep = 155;
 
-    setupSevenDayForecastUi();
+    //setupSevenDayForecastUi();
     setupHourlyForecast();
     setupWeatherDetailsUi();
     loadFavoritesIntoDropdown();
 
-    currentCity = "Zenica";
+    api = new WeatherApi(this);
+    connect(api, &WeatherApi::forecastDataReady, this, &MainWindow::updateWeatherUI);
+    connect(favoriteButton, &QPushButton::clicked, this, &MainWindow::toggleFavorite);
+    connect(ui->leftScrollButton, &QToolButton::clicked, this, &MainWindow::scrollLeft);
+    connect(ui->rightScrollButton, &QToolButton::clicked, this, &MainWindow::scrollRight);
+    connect(ui->searchBar, &QLineEdit::returnPressed, this, &MainWindow::onSearchBarPressed);
+    connect(api, &WeatherApi::forecastDataReady, this, &MainWindow::updateHourlyForecast);
+    connect(api, &WeatherApi::forecastDataReady, this, &MainWindow::updateSevenDayForecast);
 
+    currentCity = "Zenica";
     QStringList favorites = getFavoriteCities();
     if (favorites.contains(currentCity)) {
         favoriteButton->setIcon(QIcon(":/images/star_filled.png"));
     }
+    api->makeRequestforLatandLong(currentCity);
 
-    api = new WeatherApi(this);
 
+}
 
-    CurrentWeatherData cwd;
-    cwd.city = "Zenica";
-    cwd.icon = QPixmap("C:/Users/ajdeJ/Downloads/Edin-Tabak-2.png");
-    cwd.condition = "Sunny";
-    cwd.temperature = 25.0;
+void MainWindow::updateWeatherUI() {
+    WeatherDataALL cwd = api->getWeather();
     updateCurrentWeather(cwd);
+}
 
+void MainWindow::updateCurrentWeather(const WeatherDataALL& data) {
+    qDebug() << data.getCity();
+    currentCity =  data.getCity();
+    ui->city->setText(data.getCity());
+    ui->temperature->setText(QString::number(data.getTemperature()) + "°C");
+    ui->condition->setText(data.getDescription());
+    humidityValueLabel->setText(QString::number(data.getHumidity()) + '%');
+    windValueLabel->setText(QString::number(data.getwindSpeed()) + " km/h");
+    sunriseValueLabel->setText(data.getSunrise());
+    sunsetValueLabel->setText(data.getSunset());
+    uvValueLabel->setText(QString::number(data.getVisibility()) + " m");
+    int w = ui->weatherIcon->width();
+    int h = ui->weatherIcon->height();
+    //ui->weatherIcon->setPixmap(data.getIcon().scaled(w, h, Qt::KeepAspectRatio));
 }
 
 void MainWindow::toggleFavorite() {
@@ -128,6 +146,12 @@ void MainWindow::onSearchBarPressed() {
     QString searchText = ui->searchBar->text().trimmed();
     if (!searchText.isEmpty()) {
         api->makeRequestforLatandLong(searchText);
+        QStringList favorites = getFavoriteCities();
+        if (favorites.contains(searchText)) {
+            favoriteButton->setIcon(QIcon(":/images/star_filled.png"));
+        } else {
+            favoriteButton->setIcon(QIcon(":/images/star_hollow.png"));
+        }
     }
 }
 
@@ -135,7 +159,7 @@ void MainWindow::onSearchBarPressed() {
 void MainWindow::setupSevenDayForecastUi() {
     QGridLayout *gridLayout = new QGridLayout(ui->forecastGrid);
 
-    for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < 5; ++i) {
         QLabel *dayLabel = new QLabel("Day");
         QLabel *iconLabel = new QLabel("Icon");
         QLabel *chanceOfRainLabel = new QLabel("Chance of Rain");
@@ -147,6 +171,44 @@ void MainWindow::setupSevenDayForecastUi() {
         gridLayout->addWidget(temperatureLabel, i, 3);
     }
 
+}
+
+void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastData) {
+    QGridLayout *gridLayout = qobject_cast<QGridLayout*>(ui->forecastGrid->layout());
+    if (!gridLayout) {
+        gridLayout = new QGridLayout(ui->forecastGrid);
+        ui->forecastGrid->setLayout(gridLayout);
+    }
+
+    while (QLayoutItem* item = gridLayout->takeAt(0)) {
+        delete item->widget();
+        delete item;
+    }
+
+    for (int i = 0; i < 5; ++i) {
+        const WeatherDataALL &data = forecastData[i*8];
+        QDate date = QDateTime::currentDateTime().date().addDays(i);
+        int dayOfWeek = date.dayOfWeek();
+
+        QString dayName = QLocale::system().dayName(dayOfWeek, QLocale::LongFormat);
+
+        QLabel *dayLabel = new QLabel(dayName);
+
+        QPixmap iconPixmap(data.getIcon());
+        QLabel *iconLabel = new QLabel();
+        iconLabel->setPixmap(iconPixmap);
+
+        QLabel *chanceOfRainLabel = new QLabel(QString::number(data.getHumidity()) + "%");
+        QLabel *temperatureLabel = new QLabel(QString::number(data.getTemperature()) + "°C");
+
+        gridLayout->addWidget(dayLabel, i, 0);
+        gridLayout->addWidget(iconLabel, i, 1);
+        gridLayout->addWidget(chanceOfRainLabel, i, 2);
+        gridLayout->addWidget(temperatureLabel, i, 3);
+    }
+
+    ui->forecastGrid->update();
+    ui->forecastGrid->repaint();
 }
 
 void MainWindow::setupHourlyForecast() {
@@ -177,16 +239,6 @@ void MainWindow::setupHourlyForecast() {
     ui->scrollArea->setWidget(container);
 }
 
-void MainWindow::updateCurrentWeather(const CurrentWeatherData& data) {
-    ui->city->setText(data.city);
-    ui->temperature->setText(QString::number(data.temperature) + "°C");
-
-    int w = ui->weatherIcon->width();
-    int h = ui->weatherIcon->height();
-    ui->weatherIcon->setPixmap(data.icon.scaled(w, h, Qt::KeepAspectRatio));
-
-    ui->condition->setText(data.condition);
-}
 
 void MainWindow::setupWeatherDetailsUi() {
     QGridLayout *gridLayout = new QGridLayout(ui->details);
@@ -197,7 +249,7 @@ void MainWindow::setupWeatherDetailsUi() {
     QIcon sunriseIcon;
     QIcon sunsetIcon;
 
-    QWidget *uvWidget = createDetailWidget("UV Index", "Low", uvIcon, &uvValueLabel);
+    QWidget *uvWidget = createDetailWidget("Visibilty", "0", uvIcon, &uvValueLabel);
     QWidget *humidityWidget = createDetailWidget("Humidity", "81%", humidityIcon, &humidityValueLabel);
     QWidget *windWidget = createDetailWidget("Wind", "3 km/h", windIcon, &windValueLabel);
 
@@ -222,14 +274,6 @@ void MainWindow::setupWeatherDetailsUi() {
     ui->details->setLayout(gridLayout);
 }
 
-void MainWindow::updateWeatherDetails(const WeatherData& data) {
-    // Update the value labels with the data from the API
-    uvValueLabel->setText(data.uvIndex);
-    humidityValueLabel->setText(QString::number(data.humidity) + '%');
-    windValueLabel->setText(QString::number(data.windSpeed) + " km/h");
-    sunriseValueLabel->setText(data.sunrise.toString("HH:mm"));
-    sunsetValueLabel->setText(data.sunset.toString("HH:mm"));
-}
 
 QWidget* MainWindow::createDetailWidget(const QString &titleText, const QString &valueText,
                                         const QIcon &icon, QLabel **valueLabelPtr) {
@@ -260,61 +304,42 @@ QWidget* MainWindow::createDetailWidget(const QString &titleText, const QString 
 }
 
 
-/*void MainWindow::updateHourlyForecast(const QVector<WeatherData>& forecastData) {
+void MainWindow::updateHourlyForecast(const QVector<WeatherDataALL>& forecastData) {
     QWidget *container = new QWidget();
     QHBoxLayout *layout = new QHBoxLayout(container);
 
-    const QSize widgetSize(150, 190);
-
+    const QSize widgetSize(150, 170);
+    int brojac = 0;
     for (const auto &data : forecastData) {
+        if(brojac == 24)
+            break;
         QWidget *hourWidget = new QWidget(container);
         hourWidget->setFixedSize(widgetSize);
         QVBoxLayout *hourLayout = new QVBoxLayout(hourWidget);
 
-        QLabel *timeLabel = new QLabel(data.time.toString("h:mm a"), hourWidget);
-        QLabel *tempLabel = new QLabel(QString::number(data.temperature) + "°C", hourWidget);
-        QLabel *iconLabel = new QLabel(hourWidget);
-        iconLabel->setPixmap(getWeatherIcon(data.condition));
+        int hoursToAdd = (brojac * 3)+1; // Increment by 3 hours each iteration
+        QDateTime incrementedTime = QDateTime::currentDateTime().addSecs(hoursToAdd * 3600); // Convert hours to seconds
+        QLabel *timeLabel = new QLabel(incrementedTime.toString("h:mm a"), hourWidget);
+
+        QLabel *tempLabel = new QLabel(QString::number(data.getTemperature()) + "°C", hourWidget);
+        //QLabel *iconLabel = new QLabel(hourWidget);
+        //iconLabel->setPixmap(getWeatherIcon(data.icon));
 
         hourLayout->addWidget(timeLabel);
-        hourLayout->addWidget(iconLabel);
+        //hourLayout->addWidget(iconLabel);
         hourLayout->addWidget(tempLabel);
 
         layout->addWidget(hourWidget);
+        brojac++;
     }
 
     int visibleWidgets = 6;
-    ui->scrollArea->setFixedWidth(widgetSize.width() * visibleWidgets + 20);
+    ui->scrollArea->setFixedWidth(widgetSize.width() * visibleWidgets);
 
     ui->scrollArea->setWidget(container);
 }
 
-void MainWindow::updateSevenDayForecast(const QVector<WeatherData>& forecastData) {
-    QGridLayout *gridLayout = qobject_cast<QGridLayout*>(ui->forecastPlaceholder->layout());
-    if (!gridLayout) return;
 
-    while (QLayoutItem* item = gridLayout->takeAt(0)) {
-        delete item->widget(); // Delete the widget
-        delete item;           // Delete the layout item
-    }
-
-    for (int i = 0; i < forecastData.size(); ++i) {
-        const WeatherData &data = forecastData[i];
-
-        QLabel *dayLabel = new QLabel();
-        QLabel *iconLabel = new QLabel(); // Set icon based on data.condition
-        QLabel *chanceOfRainLabel = new QLabel(QString::number(data.chanceOfRain) + "%");
-        QLabel *temperatureLabel = new QLabel(QString::number(data.temperature) + "°C");
-
-        gridLayout->addWidget(dayLabel, i, 0);
-        gridLayout->addWidget(iconLabel, i, 1);
-        gridLayout->addWidget(chanceOfRainLabel, i, 2);
-        gridLayout->addWidget(temperatureLabel, i, 3);
-    }
-}
-
-
-*/
 
 void MainWindow::scrollLeft() {
     int value = ui->scrollArea->horizontalScrollBar()->value();

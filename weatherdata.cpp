@@ -37,23 +37,46 @@ void WeatherDataALL::setHumidity(double humid){
 void WeatherDataALL::setwindSpeed(double speed){
     this->windSpeed=speed;
 };
+void WeatherDataALL::setCity(QString city){
+    this->city=city;
+};
+void WeatherDataALL::setSunrise(QString sunrise){
+    this->sunrise=sunrise;
+};
+void WeatherDataALL::setSunset(QString sunset){
+    this->sunset=sunset;
+};
+void WeatherDataALL::setVisibility(int visibility){
+    this->visibility=visibility;
+};
 
-
-QString WeatherDataALL::getCurrentWeather(){
+QString WeatherDataALL::getCurrentWeather() const{
     return this->currentWeather;
 };
-QString WeatherDataALL::getDescription(){
+QString WeatherDataALL::getDescription() const{
     return this->description;
 };
-QString WeatherDataALL::getIcon(){
+QString WeatherDataALL::getIcon() const{
     return this->icon;
 };
-int WeatherDataALL::getTemperature(){
+int WeatherDataALL::getTemperature() const{
     return this->temperature;
 };
-double WeatherDataALL::getHumidity(){
+double WeatherDataALL::getHumidity() const{
     return this->humidity;
 };
-double WeatherDataALL::getwindSpeed(){
+double WeatherDataALL::getwindSpeed() const{
     return this->windSpeed;
+};
+QString WeatherDataALL::getCity() const{
+    return this->city;
+};
+QString WeatherDataALL::getSunrise() const{
+    return this->sunrise;
+};
+QString WeatherDataALL::getSunset() const{
+    return this->sunset;
+};
+int WeatherDataALL::getVisibility() const{
+    return this->visibility;
 };

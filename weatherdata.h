@@ -17,15 +17,23 @@ public:
     void setTemperature(int temp);
     void setHumidity(double humid);
     void setwindSpeed(double speed);
+    void setCity(QString city);
+    void setSunrise(QString sunrise);
+    void setSunset(QString sunset);
+    void setVisibility(int visibility);
 
-    QString getCurrentWeather();
-    QString getDescription();
-    QString getIcon();
-    int getTemperature();
-    double getHumidity();
-    double getwindSpeed();
+    QString getCurrentWeather() const;
+    QString getDescription() const;
+    QString getIcon() const;
+    int getTemperature() const;
+    double getHumidity() const;
+    double getwindSpeed() const;
+    QString getCity() const;
+    QString getSunrise() const;
+    QString getSunset() const;
+    int getVisibility() const;
 
-    private:
+private:
     double latitude;
     double longitude;
     QString currentWeather;
@@ -34,11 +42,10 @@ public:
     int temperature;
     double humidity;
     double windSpeed;
-
-
-
-
-
+    QString city;
+    QString sunrise;
+    QString sunset;
+    int visibility;
 };
 
 #endif // WEATHERDATA_H

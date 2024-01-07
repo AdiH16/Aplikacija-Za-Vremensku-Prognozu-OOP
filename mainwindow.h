@@ -18,20 +18,6 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
-struct CurrentWeatherData {
-    QString city;
-    double temperature;
-    QString condition;
-    QPixmap icon;
-};
-
-struct WeatherData {
-    QString uvIndex;
-    int humidity;
-    int windSpeed;
-    QTime sunrise;
-    QTime sunset;
-};
 
 
 class MainWindow : public QMainWindow
@@ -45,11 +31,10 @@ public:
 private slots:
     void scrollLeft();
     void scrollRight();
-    //void updateHourlyForecast(const QVector<WeatherData>& forecastData);
-    //void updateSevenDayForecast(const QVector<WeatherData>& forecastData);
+    void updateHourlyForecast(const QVector<WeatherDataALL>& forecastData);
+    void updateSevenDayForecast(const QVector<WeatherDataALL>& forecastData);
 
-    void updateWeatherDetails(const WeatherData& data);
-    void updateCurrentWeather(const CurrentWeatherData& data);
+    void updateCurrentWeather(const WeatherDataALL& data);
     void toggleFavorite();
     void onSearchBarPressed();
     void addCityToFavorites(const QString &city);
@@ -57,6 +42,7 @@ private slots:
     QStringList getFavoriteCities();
     void writeFavoriteCities(const QStringList &cities);
     void loadFavoritesIntoDropdown();
+    void updateWeatherUI();
 private:
     Ui::MainWindow *ui;
     int scrollStep;
