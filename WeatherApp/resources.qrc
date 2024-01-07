@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>images/star_filled.png</file>
-        <file>images/star_hollow.png</file>
-    </qresource>
-</RCC>
