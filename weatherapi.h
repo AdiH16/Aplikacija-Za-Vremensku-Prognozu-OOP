@@ -4,11 +4,16 @@
 #include <QObject>
 #include <QNetworkAccessManager>
 #include "weatherdata.h"
+enum RequestType{
+CurrentWeather=0,
+    WeatherForecast
+};
 class WeatherApi : public QObject
 {
     Q_OBJECT
 
 public:
+
     explicit WeatherApi(QObject *parent = nullptr);
     void makeRequestforLatandLong(const QString& cityName);
     void parseWeatherData(const QByteArray &jsonData);
@@ -23,6 +28,7 @@ signals:
     void weatherDataUpdated();
     void forecastDataReady(const QVector<WeatherDataALL>& forecastData);
 private:
+    RequestType currentRequestType;
     QNetworkAccessManager *manager;
     WeatherDataALL weather;
     bool isRequestForCoordinates = true;

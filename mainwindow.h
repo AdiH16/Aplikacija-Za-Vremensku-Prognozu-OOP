@@ -43,6 +43,9 @@ private slots:
     void writeFavoriteCities(const QStringList &cities);
     void loadFavoritesIntoDropdown();
     void updateWeatherUI();
+   void onFavoriteCityChanged(const QString &cityName);
+   // void onFavoriteCityChanged(int index);
+
 private:
     Ui::MainWindow *ui;
     int scrollStep;
@@ -63,6 +66,6 @@ private:
                                 const QIcon &icon, QLabel **valueLabelPtr);
     void setupUiComponents();
     QString currentCity;
-    WeatherApi *api;
+    std::unique_ptr<WeatherApi> api;
 };
 #endif // MAINWINDOW_H

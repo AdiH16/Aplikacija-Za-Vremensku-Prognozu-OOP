@@ -2,6 +2,8 @@
 #define WEATHERDATAALL_H
 #include <QString>
 #include "qtmetamacros.h"
+#include <QDebug>
+
 class WeatherDataALL
 {
 public:
@@ -11,6 +13,13 @@ public:
     double getLatitude();
     double getLongitude();
 
+    enum WeatherCondition{
+        Sunny,
+        Cloudy,
+        Rainy,
+        Snowy,
+        Unknown
+    };
     void setCurrentWeather(QString curweather);
     void setDescription(QString desc);
     void setIcon(QString imgID);
@@ -21,6 +30,11 @@ public:
     void setSunrise(QString sunrise);
     void setSunset(QString sunset);
     void setVisibility(int visibility);
+
+    WeatherCondition getWeatherCondition();
+    void setConditionsFromDescription(const QString &description);
+    virtual QString getConditionAsString() const;
+    friend QDebug operator<<(QDebug dbg, const WeatherDataALL &data);
 
     QString getCurrentWeather() const;
     QString getDescription() const;
@@ -34,6 +48,8 @@ public:
     int getVisibility() const;
 
 private:
+    WeatherCondition currentCondition=Unknown;
+
     double latitude;
     double longitude;
     QString currentWeather;

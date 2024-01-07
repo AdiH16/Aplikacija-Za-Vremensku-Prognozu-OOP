@@ -7,16 +7,20 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QTimeZone>
+#include "weatherapi.h"
 #include "weatherdata.h"
 
 WeatherApi::WeatherApi(QObject *parent) : QObject(parent)
 {
     manager = new QNetworkAccessManager(this);
     connect(manager, &QNetworkAccessManager::finished, this, &WeatherApi::replyFinished);
+    this->currentRequestType=CurrentWeather;
+
 }
 
 void WeatherApi::makeRequestforLatandLong(const QString& cityName)
 {
+    currentRequestType=CurrentWeather;
     QUrl url(QString("http://api.openweathermap.org/data/2.5/weather?q=%1&appid=e43a65503edf85fd87e11e151341ad08").arg(cityName));
     QNetworkRequest request(url);
 
@@ -38,6 +42,25 @@ void WeatherApi::replyFinished(QNetworkReply *reply) {
     }
     reply->deleteLater();
 }
+// void WeatherApi::replyFinished(QNetworkReply *reply) {
+//     if (reply->error()) {
+//         qDebug() << "Network error:" << reply->errorString();
+//         return;
+//     }
+
+//     QByteArray responseData = reply->readAll();
+
+//     switch (this->currentRequestType) {
+//     case CurrentWeather:
+//         parseWeatherData(responseData);
+//         break;
+//     case WeatherForecast:
+//         parseForecastData(responseData);
+//         break;
+//     }
+
+//     reply->deleteLater();
+// }
 
 
 void WeatherApi::makeRequestForData(){
@@ -72,11 +95,17 @@ void WeatherApi::parseWeatherData(const QByteArray &jsonData) {
     if (!doc.isNull() && doc.isObject()) {
         QJsonObject jsonObj = doc.object();
 
+        if (jsonObj.isEmpty()) {
+            throw std::runtime_error("Invalid JSON data received");
+        }
+
         QJsonArray weatherArray = jsonObj["weather"].toArray();
         if (!weatherArray.isEmpty()) {
             QJsonObject weatherObj = weatherArray.first().toObject();
             weather.setCurrentWeather(weatherObj["main"].toString());
             weather.setDescription(weatherObj["description"].toString());
+
+            weather.setConditionsFromDescription(weatherObj["description"].toString());
             weather.setIcon(weatherObj["icon"].toString());
         }
 
@@ -100,6 +129,7 @@ void WeatherApi::parseWeatherData(const QByteArray &jsonData) {
 }
 
 void WeatherApi::makeForecastRequest() {
+    currentRequestType = WeatherForecast;
     QString url = QString("https://api.openweathermap.org/data/2.5/forecast?lat=%1&lon=%2&appid=e43a65503edf85fd87e11e151341ad08&units=metric")
                       .arg(weather.getLatitude()).arg(weather.getLongitude());
     QUrl requestUrl(url);

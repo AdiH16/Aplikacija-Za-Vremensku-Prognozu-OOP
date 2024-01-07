@@ -35,14 +35,30 @@ MainWindow::MainWindow(QWidget *parent)
     setupWeatherDetailsUi();
     loadFavoritesIntoDropdown();
 
-    api = new WeatherApi(this);
-    connect(api, &WeatherApi::forecastDataReady, this, &MainWindow::updateWeatherUI);
+    api = std::make_unique<WeatherApi>(this);
+    connect(api.get(), &WeatherApi::forecastDataReady, this, &MainWindow::updateWeatherUI);
     connect(favoriteButton, &QPushButton::clicked, this, &MainWindow::toggleFavorite);
     connect(ui->leftScrollButton, &QToolButton::clicked, this, &MainWindow::scrollLeft);
     connect(ui->rightScrollButton, &QToolButton::clicked, this, &MainWindow::scrollRight);
     connect(ui->searchBar, &QLineEdit::returnPressed, this, &MainWindow::onSearchBarPressed);
-    connect(api, &WeatherApi::forecastDataReady, this, &MainWindow::updateHourlyForecast);
-    connect(api, &WeatherApi::forecastDataReady, this, &MainWindow::updateSevenDayForecast);
+    connect(api.get(), &WeatherApi::forecastDataReady, this, &MainWindow::updateHourlyForecast);
+    connect(api.get(), &WeatherApi::forecastDataReady, this, &MainWindow::updateSevenDayForecast);
+
+    //connect(ui->favouriteCities, &QComboBox::currentTextChanged, this, &MainWindow::onFavoriteCityChanged);
+    connect(ui->favouriteCities, &QComboBox::currentTextChanged, this, &MainWindow::onFavoriteCityChanged);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     currentCity = "Zenica";
     QStringList favorites = getFavoriteCities();
@@ -73,6 +89,20 @@ void MainWindow::updateCurrentWeather(const WeatherDataALL& data) {
     int w = ui->weatherIcon->width();
     int h = ui->weatherIcon->height();
     //ui->weatherIcon->setPixmap(data.getIcon().scaled(w, h, Qt::KeepAspectRatio));
+    QString iconPath = ":/images/" + data.getIcon() + ".png"; // Pretpostavljamo da su ikone u resources fajlu
+    QPixmap icon(iconPath);
+    if(!icon.isNull()) {
+        ui->weatherIcon->setPixmap(icon.scaled(ui->weatherIcon->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else {
+        qDebug() << "Ikonica nije nađena za: " << data.getIcon();
+    }
+}
+
+void MainWindow::onFavoriteCityChanged(const QString &cityName) {
+    if(!cityName.isEmpty())
+    {
+        api->makeRequestforLatandLong(cityName);
+    }
 }
 
 void MainWindow::toggleFavorite() {

@@ -2,6 +2,34 @@
 
 WeatherDataALL::WeatherDataALL() {}
 
+void WeatherDataALL::setConditionsFromDescription(const QString &description) {
+    if (description.contains("rain", Qt::CaseInsensitive)) {
+        currentCondition = Rainy;
+    } else if (description.contains("cloud", Qt::CaseInsensitive)) {
+        currentCondition = Cloudy;
+    } // Dodajte više uslova po potrebi
+    else {
+        currentCondition = Unknown;
+    }
+}
+
+QString WeatherDataALL::getConditionAsString() const {
+    switch (currentCondition) {
+    case Sunny: return "Sunny";
+    case Cloudy: return "Cloudy";
+    case Rainy: return "Rainy";
+    case Snowy: return "Snowy";
+    default: return "Unknown";
+    }
+}
+
+QDebug operator<<(QDebug dbg, const WeatherDataALL &data) {
+    dbg.nospace() << "WeatherDataALL(City: " << data.getCity()
+                  << ", Temperature: " << data.getTemperature()
+                  << ", Condition: " << data.getConditionAsString() << ")";
+    return dbg.space();
+}
+
 void WeatherDataALL::setLatitude(double latitu){
     this->latitude=latitu;
 };
@@ -80,3 +108,5 @@ QString WeatherDataALL::getSunset() const{
 int WeatherDataALL::getVisibility() const{
     return this->visibility;
 };
+
+
