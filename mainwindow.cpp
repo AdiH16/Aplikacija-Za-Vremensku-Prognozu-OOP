@@ -48,18 +48,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->favouriteCities, &QComboBox::currentTextChanged, this, &MainWindow::onFavoriteCityChanged);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     currentCity = "Zenica";
     QStringList favorites = getFavoriteCities();
     if (favorites.contains(currentCity)) {
@@ -69,6 +57,32 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 }
+
+// void MainWindow::updateThreeHourForecast(const QVector<WeatherDataALL>& forecastData) {
+//     // Pretpostavimo da postoji container widget sa layout-om za tročasovne intervale
+//     QWidget *container = new QWidget();
+//     QHBoxLayout *layout = new QHBoxLayout(container);
+
+//     for (const auto &data : forecastData) {
+//         QWidget *forecastWidget = new QWidget(container);
+//         QVBoxLayout *forecastLayout = new QVBoxLayout(forecastWidget);
+
+//         QLabel *timeLabel = new QLabel(data.getTime().toString("hh:mm a"), forecastWidget);
+//         QLabel *tempLabel = new QLabel(QString::number(data.getTemperature()) + "°C", forecastWidget);
+//         QLabel *iconLabel = new QLabel(forecastWidget);
+//         QPixmap iconPixmap(":/images/" + data.getIcon() + ".png");
+//         iconLabel->setPixmap(iconPixmap.scaled(50, 50, Qt::KeepAspectRatio));
+
+//         forecastLayout->addWidget(timeLabel);
+//         forecastLayout->addWidget(iconLabel);
+//         forecastLayout->addWidget(tempLabel);
+
+//         layout->addWidget(forecastWidget);
+//     }
+
+//     ui->scrollArea->setWidget(container);
+// }
+
 
 void MainWindow::updateWeatherUI() {
     WeatherDataALL cwd = api->getWeather();
@@ -203,6 +217,95 @@ void MainWindow::setupSevenDayForecastUi() {
 
 }
 
+// void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastData) {
+//     QGridLayout *gridLayout = qobject_cast<QGridLayout*>(ui->forecastGrid->layout());
+//     if (!gridLayout) {
+//         gridLayout = new QGridLayout(ui->forecastGrid);
+//         ui->forecastGrid->setLayout(gridLayout);
+//     }
+
+
+//     while (QLayoutItem* item = gridLayout->takeAt(0)) {
+//         delete item->widget();
+//         delete item;
+//     }
+
+//     QString labelStyle = "QLabel { background-color : transparent; color : black; }";
+
+//     for (int i = 0; i < forecastData.size(); ++i) {
+//         const WeatherDataALL &data = forecastData[i];
+
+//         QLabel *dayLabel = new QLabel(data.getDateTime().toString("dddd"));
+//         dayLabel->setAlignment(Qt::AlignCenter);
+//         dayLabel->setStyleSheet(labelStyle);
+
+//         QLabel *iconLabel = new QLabel();
+//         QString iconPath = ":/images/" + data.getIcon() + ".png";
+//         QPixmap icon(iconPath);
+//         if(!icon.isNull()) {
+//             iconLabel->setPixmap(icon.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+//         }
+//         iconLabel->setAlignment(Qt::AlignCenter);
+//         iconLabel->setStyleSheet(labelStyle);
+
+//         QLabel *chanceOfRainLabel = new QLabel(QString::number(data.getHumidity()) + "%");
+//         chanceOfRainLabel->setAlignment(Qt::AlignCenter);
+//         chanceOfRainLabel->setStyleSheet(labelStyle);
+
+//         QLabel *temperatureLabel = new QLabel(QString::number(data.getTemperature()) + "°C");
+//         temperatureLabel->setAlignment(Qt::AlignCenter);
+//         temperatureLabel->setStyleSheet(labelStyle);
+
+//         gridLayout->addWidget(dayLabel, i, 0);
+//         gridLayout->addWidget(iconLabel, i, 1);
+//         gridLayout->addWidget(chanceOfRainLabel, i, 2);
+//         gridLayout->addWidget(temperatureLabel, i, 3);
+//     }
+
+
+//     ui->forecastGrid->update();
+//     ui->forecastGrid->repaint();
+// }
+
+//izmjena
+
+// void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastData) {
+//     QGridLayout *gridLayout = qobject_cast<QGridLayout*>(ui->forecastGrid->layout());
+//     if (!gridLayout) {
+//         gridLayout = new QGridLayout(ui->forecastGrid);
+//         ui->forecastGrid->setLayout(gridLayout);
+//     }
+
+//     while (QLayoutItem* item = gridLayout->takeAt(0)) {
+//         delete item->widget();
+//         delete item;
+//     }
+
+//     for (int i = 0; i < 5; ++i) {
+//         const WeatherDataALL &data = forecastData[i*8];
+//         QDate date = QDateTime::currentDateTime().date().addDays(i);
+//         int dayOfWeek = date.dayOfWeek();
+
+//         QString dayName = QLocale::system().dayName(dayOfWeek, QLocale::LongFormat);
+
+//         QLabel *dayLabel = new QLabel(dayName);
+
+//         QPixmap iconPixmap(data.getIcon());
+//         QLabel *iconLabel = new QLabel();
+//         iconLabel->setPixmap(iconPixmap);
+
+//         QLabel *chanceOfRainLabel = new QLabel(QString::number(data.getHumidity()) + "%");
+//         QLabel *temperatureLabel = new QLabel(QString::number(data.getTemperature()) + "°C");
+
+//         gridLayout->addWidget(dayLabel, i, 0);
+//         gridLayout->addWidget(iconLabel, i, 1);
+//         gridLayout->addWidget(chanceOfRainLabel, i, 2);
+//         gridLayout->addWidget(temperatureLabel, i, 3);
+//     }
+
+//     ui->forecastGrid->update();
+//     ui->forecastGrid->repaint();
+// }
 void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastData) {
     QGridLayout *gridLayout = qobject_cast<QGridLayout*>(ui->forecastGrid->layout());
     if (!gridLayout) {
@@ -216,20 +319,30 @@ void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastD
     }
 
     for (int i = 0; i < 5; ++i) {
-        const WeatherDataALL &data = forecastData[i*8];
+        const WeatherDataALL &data = forecastData[i*8]; // Pretpostavljam da ovako izdvajaš podatke za određeni dan
         QDate date = QDateTime::currentDateTime().date().addDays(i);
         int dayOfWeek = date.dayOfWeek();
-
         QString dayName = QLocale::system().dayName(dayOfWeek, QLocale::LongFormat);
 
         QLabel *dayLabel = new QLabel(dayName);
+        dayLabel->setAlignment(Qt::AlignCenter);
 
-        QPixmap iconPixmap(data.getIcon());
+        // Provjeravamo da li je putanja ikone validna
+        QString iconPath = ":/images/" + data.getIcon() + ".png";
+        QPixmap iconPixmap(iconPath);
         QLabel *iconLabel = new QLabel();
-        iconLabel->setPixmap(iconPixmap);
+        if (!iconPixmap.isNull()) {
+            iconLabel->setPixmap(iconPixmap.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else {
+            iconLabel->setText("No icon"); // Ako ikona nije pronađena, postavljamo placeholder tekst
+        }
+        iconLabel->setAlignment(Qt::AlignCenter);
 
         QLabel *chanceOfRainLabel = new QLabel(QString::number(data.getHumidity()) + "%");
+        chanceOfRainLabel->setAlignment(Qt::AlignCenter);
+
         QLabel *temperatureLabel = new QLabel(QString::number(data.getTemperature()) + "°C");
+        temperatureLabel->setAlignment(Qt::AlignCenter);
 
         gridLayout->addWidget(dayLabel, i, 0);
         gridLayout->addWidget(iconLabel, i, 1);
@@ -240,6 +353,8 @@ void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastD
     ui->forecastGrid->update();
     ui->forecastGrid->repaint();
 }
+
+
 
 void MainWindow::setupHourlyForecast() {
     QWidget *container = new QWidget();
@@ -338,10 +453,10 @@ void MainWindow::updateHourlyForecast(const QVector<WeatherDataALL>& forecastDat
     QWidget *container = new QWidget();
     QHBoxLayout *layout = new QHBoxLayout(container);
 
-    const QSize widgetSize(150, 170);
+    const QSize widgetSize(150, 170); // Prilagodi ovo prema potrebama
     int brojac = 0;
     for (const auto &data : forecastData) {
-        if(brojac == 24)
+        if(brojac == 24) // Ograničavamo na 24 sata
             break;
         QWidget *hourWidget = new QWidget(container);
         hourWidget->setFixedSize(widgetSize);
@@ -349,25 +464,34 @@ void MainWindow::updateHourlyForecast(const QVector<WeatherDataALL>& forecastDat
 
         int hoursToAdd = (brojac * 3)+1; // Increment by 3 hours each iteration
         QDateTime incrementedTime = QDateTime::currentDateTime().addSecs(hoursToAdd * 3600); // Convert hours to seconds
-        QLabel *timeLabel = new QLabel(incrementedTime.toString("h:mm a"), hourWidget);
-
+        //QLabel *timeLabel = new QLabel(incrementedTime.toString("h:mm a"), hourWidget);
+        //izmjena
+        QLabel *timeLabel = new QLabel(data.getDateTime().toString("h:mm a"), hourWidget);
         QLabel *tempLabel = new QLabel(QString::number(data.getTemperature()) + "°C", hourWidget);
-        //QLabel *iconLabel = new QLabel(hourWidget);
-        //iconLabel->setPixmap(getWeatherIcon(data.icon));
+
+        // Ovdje dodajemo ikonu
+        QLabel *iconLabel = new QLabel(hourWidget);
+        QString iconPath = ":/images/" + data.getIcon() + ".png"; // Pretpostavljamo da su ikone u resources fajlu
+        QPixmap icon(iconPath);
+        if(!icon.isNull()) {
+            iconLabel->setPixmap(icon.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        } else {
+            qDebug() << "Ikonica nije nađena za: " << data.getIcon();
+        }
 
         hourLayout->addWidget(timeLabel);
-        //hourLayout->addWidget(iconLabel);
+        hourLayout->addWidget(iconLabel);
         hourLayout->addWidget(tempLabel);
 
         layout->addWidget(hourWidget);
         brojac++;
     }
 
-    int visibleWidgets = 6;
+    int visibleWidgets = 6; // Koliko widgeta želimo vidjeti odjednom
     ui->scrollArea->setFixedWidth(widgetSize.width() * visibleWidgets);
-
     ui->scrollArea->setWidget(container);
 }
+//izmjena
 
 
 

@@ -3,7 +3,7 @@
 #include <QString>
 #include "qtmetamacros.h"
 #include <QDebug>
-
+#include <QDateTime>
 class WeatherDataALL
 {
 public:
@@ -46,7 +46,9 @@ public:
     QString getSunrise() const;
     QString getSunset() const;
     int getVisibility() const;
-
+    //izmjena
+    void setDateTime(const QDateTime& newDateTime);
+    QDateTime getDateTime() const;
 private:
     WeatherCondition currentCondition=Unknown;
 
@@ -62,6 +64,8 @@ private:
     QString sunrise;
     QString sunset;
     int visibility;
+
+    QDateTime dateTime;
 };
 
 #endif // WEATHERDATA_H

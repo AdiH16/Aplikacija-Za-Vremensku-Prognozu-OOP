@@ -200,6 +200,10 @@ void WeatherApi::parseForecastData(const QByteArray &jsonData) {
             QJsonObject obj = value.toObject();
             WeatherDataALL data;
 
+            //izmjena
+            QDateTime dateTime = QDateTime::fromSecsSinceEpoch(obj["dt"].toInt());
+            data.setDateTime(dateTime);
+
             QJsonObject itemMainObj = obj["main"].toObject();
             data.setTemperature(itemMainObj["temp"].toDouble());
             data.setHumidity(itemMainObj["humidity"].toDouble());

@@ -58,6 +58,7 @@ private:
     QLineEdit *searchBar;
     QComboBox *favoritesDropdown;
     QGridLayout *gridLayout;
+    // void updateThreeHourForecast(const QVector<WeatherDataALL>& forecastData);
 
     void setupSevenDayForecastUi();
     void setupHourlyForecast();

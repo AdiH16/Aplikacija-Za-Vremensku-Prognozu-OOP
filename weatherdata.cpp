@@ -2,6 +2,13 @@
 
 WeatherDataALL::WeatherDataALL() {}
 
+void WeatherDataALL::setDateTime(const QDateTime& newDateTime) {
+    dateTime = newDateTime;
+}
+QDateTime WeatherDataALL::getDateTime() const {
+    return dateTime;
+}
+
 void WeatherDataALL::setConditionsFromDescription(const QString &description) {
     if (description.contains("rain", Qt::CaseInsensitive)) {
         currentCondition = Rainy;
