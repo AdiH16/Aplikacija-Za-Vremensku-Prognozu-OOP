@@ -43,8 +43,11 @@ private slots:
     void writeFavoriteCities(const QStringList &cities);
     void loadFavoritesIntoDropdown();
     void updateWeatherUI();
-   void onFavoriteCityChanged(const QString &cityName);
-   // void onFavoriteCityChanged(int index);
+
+    void onFavoriteCityChanged(const QString &cityName);
+    //void onFavoriteCityChanged(int index);
+
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     Ui::MainWindow *ui;
