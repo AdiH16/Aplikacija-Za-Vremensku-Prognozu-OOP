@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     Qt::WindowFlags flags = windowFlags();
     Qt::WindowFlags disableFullscreen = Qt::WindowMaximizeButtonHint;
     setWindowFlags(flags & ~disableFullscreen);
+    setWindowTitle("Vremenska Prognoza");
+    setWindowIcon(QIcon(":/images/weather-app.png"));
     favoriteButton = new QPushButton();
     favoriteButton->setIcon(QIcon(":/images/star_hollow.png"));
     favoriteButton->setIconSize(QSize(28, 28));
