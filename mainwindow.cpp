@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
     setupWeatherDetailsUi();
     loadFavoritesIntoDropdown();
 
+    ui->favouriteCities->installEventFilter(this);
+
     api = std::make_unique<WeatherApi>(this);
     connect(api.get(), &WeatherApi::forecastDataReady, this, &MainWindow::updateWeatherUI);
     connect(favoriteButton, &QPushButton::clicked, this, &MainWindow::toggleFavorite);
@@ -45,7 +47,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(api.get(), &WeatherApi::forecastDataReady, this, &MainWindow::updateSevenDayForecast);
 
     //connect(ui->favouriteCities, &QComboBox::currentTextChanged, this, &MainWindow::onFavoriteCityChanged);
+
     connect(ui->favouriteCities, &QComboBox::currentTextChanged, this, &MainWindow::onFavoriteCityChanged);
+   // connect(ui->favouriteCities, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::onFavoriteCityChanged);
 
 
     currentCity = "Zenica";
@@ -89,6 +93,14 @@ void MainWindow::updateWeatherUI() {
     updateCurrentWeather(cwd);
 }
 
+bool MainWindow::eventFilter(QObject *watched, QEvent *event) {
+    if (watched == ui->favouriteCities && event->type() == QEvent::MouseButtonRelease) {
+        onFavoriteCityChanged(ui->favouriteCities->currentText());
+        return true; // Event je obrađen
+    }
+    return QMainWindow::eventFilter(watched, event); // Neka se ostali eventi obrađuju normalno
+}
+//izmjena
 void MainWindow::updateCurrentWeather(const WeatherDataALL& data) {
     qDebug() << data.getCity();
     currentCity =  data.getCity();
@@ -110,14 +122,29 @@ void MainWindow::updateCurrentWeather(const WeatherDataALL& data) {
     } else {
         qDebug() << "Ikonica nije nađena za: " << data.getIcon();
     }
+    ui->favouriteCities->setCurrentIndex(-1);
 }
 
+// void MainWindow::onFavoriteCityChanged(const QString &cityName) {
+//     if(!cityName.isEmpty())
+//     {
+//         api->makeRequestforLatandLong(cityName);
+//     }
+// }
 void MainWindow::onFavoriteCityChanged(const QString &cityName) {
-    if(!cityName.isEmpty())
-    {
+    if (!cityName.isEmpty() && cityName != currentCity) {
+        currentCity = cityName;
         api->makeRequestforLatandLong(cityName);
     }
 }
+// void MainWindow::onFavoriteCityChanged(int index) {
+//     // Ova funkcija sada uzima indeks, što znači da će se uvek pozvati kada korisnik izabere stavku iz padajuće liste
+//     QString cityName = ui->favouriteCities->itemText(index);
+//     if (!cityName.isEmpty()) {
+//         api->makeRequestforLatandLong(cityName);
+//         currentCity = cityName; // Ažuriramo trenutni grad
+//     }
+// }
 
 void MainWindow::toggleFavorite() {
 
