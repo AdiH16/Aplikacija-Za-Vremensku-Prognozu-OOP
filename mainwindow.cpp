@@ -94,7 +94,7 @@ void MainWindow::updateCurrentWeather(const WeatherDataALL& data) {
     currentCity =  data.getCity();
     ui->city->setText(data.getCity());
     ui->temperature->setText(QString::number(data.getTemperature()) + "°C");
-    ui->condition->setText(data.getDescription());
+    ui->condition->setText(data.getDescription().toUpper());
     humidityValueLabel->setText(QString::number(data.getHumidity()) + '%');
     windValueLabel->setText(QString::number(data.getwindSpeed()) + " km/h");
     sunriseValueLabel->setText(data.getSunrise());
@@ -323,7 +323,7 @@ void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastD
         QDate date = QDateTime::currentDateTime().date().addDays(i);
         int dayOfWeek = date.dayOfWeek();
         QString dayName = QLocale::system().dayName(dayOfWeek, QLocale::LongFormat);
-
+        dayName[0] = dayName[0].toUpper();
         QLabel *dayLabel = new QLabel(dayName);
         dayLabel->setAlignment(Qt::AlignCenter);
 
@@ -463,10 +463,10 @@ void MainWindow::updateHourlyForecast(const QVector<WeatherDataALL>& forecastDat
         QVBoxLayout *hourLayout = new QVBoxLayout(hourWidget);
 
         int hoursToAdd = (brojac * 3)+1; // Increment by 3 hours each iteration
-        QDateTime incrementedTime = QDateTime::currentDateTime().addSecs(hoursToAdd * 3600); // Convert hours to seconds
+        //QDateTime incrementedTime = QDateTime::currentDateTime().addSecs(hoursToAdd * 3600); // Convert hours to seconds
         //QLabel *timeLabel = new QLabel(incrementedTime.toString("h:mm a"), hourWidget);
         //izmjena
-        QLabel *timeLabel = new QLabel(data.getDateTime().toString("h:mm a"), hourWidget);
+        QLabel *timeLabel = new QLabel(data.getDateTime().toString("HH:mm"), hourWidget);
         QLabel *tempLabel = new QLabel(QString::number(data.getTemperature()) + "°C", hourWidget);
 
         // Ovdje dodajemo ikonu

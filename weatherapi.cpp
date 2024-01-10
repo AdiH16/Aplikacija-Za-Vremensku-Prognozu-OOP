@@ -70,22 +70,28 @@ void WeatherApi::makeRequestForData(){
     manager->get(request);
 };
 
-
 void WeatherApi::parseAndStoreCoordinates(const QByteArray &jsonData) {
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
-    if (!doc.isNull() && doc.isObject()) {
+    try {
+        QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+        if (doc.isNull() || !doc.isObject()) {
+            throw std::runtime_error("Invalid JSON document or format not as expected");
+        }
+
         QJsonObject jsonObj = doc.object();
 
         QJsonObject coordObj = jsonObj["coord"].toObject();
-        weather.setLongitude( coordObj["lon"].toDouble());
+        if (coordObj.isEmpty()) {
+            throw std::runtime_error("Coordinates object is empty");
+        }
+
+        weather.setLongitude(coordObj["lon"].toDouble());
         weather.setLatitude(coordObj["lat"].toDouble());
 
         qDebug() << "Longitude:" << weather.getLongitude();
         qDebug() << "Latitude:" << weather.getLatitude();
+    } catch (const std::exception &e) {
+        qDebug() << "Error occured:" << e.what();
 
-
-    } else {
-        qDebug() << "Invalid JSON document or format not as expected";
     }
 }
 
@@ -152,6 +158,7 @@ void WeatherApi::parseForecastData(const QByteArray &jsonData) {
                 QJsonObject weatherObj = weatherArray.first().toObject();
                 weather.setCurrentWeather(weatherObj["main"].toString());
                 weather.setDescription(weatherObj["description"].toString());
+                weather.setConditionsFromDescription(weatherObj["description"].toString());
                 weather.setIcon(weatherObj["icon"].toString());
                 int visibility = firstListItem["visibility"].toInt();
                 weather.setVisibility(visibility);
@@ -193,6 +200,7 @@ void WeatherApi::parseForecastData(const QByteArray &jsonData) {
 
             QString locationName = jsonObj["city"].toObject()["name"].toString();
             weather.setCity(locationName);
+            qDebug() << weather;
         }
 
         QVector<WeatherDataALL> forecastData;

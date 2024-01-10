@@ -7,13 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>1068</width>
-    <height>729</height>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 115, 165, 255), stop:1 rgba(162, 162, 162, 255))</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">background-color: transparent
+</string>
+   </property>
    <widget class="QLabel" name="temperature">
     <property name="geometry">
      <rect>
@@ -40,6 +47,11 @@
       <width>201</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>Condition</string>
@@ -186,6 +198,9 @@
         <font>
          <pointsize>12</pointsize>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
        </property>
        <property name="text">
         <string>City </string>
