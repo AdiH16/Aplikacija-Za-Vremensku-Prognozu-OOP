@@ -48,7 +48,7 @@ public:
     QString getSunrise() const;
     QString getSunset() const;
     int getVisibility() const;
-    //izmjena
+
     void setDateTime(const QDateTime& newDateTime);
     QDateTime getDateTime() const;
 private:

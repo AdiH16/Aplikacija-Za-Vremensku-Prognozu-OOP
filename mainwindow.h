@@ -45,7 +45,7 @@ private slots:
     void updateWeatherUI();
 
     void onFavoriteCityChanged(const QString &cityName);
-    //void onFavoriteCityChanged(int index);
+
 
     bool eventFilter(QObject *watched, QEvent *event) override;
 
@@ -61,7 +61,7 @@ private:
     QLineEdit *searchBar;
     QComboBox *favoritesDropdown;
     QGridLayout *gridLayout;
-    // void updateThreeHourForecast(const QVector<WeatherDataALL>& forecastData);
+
 
     void setupSevenDayForecastUi();
     void setupHourlyForecast();

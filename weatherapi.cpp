@@ -42,25 +42,6 @@ void WeatherApi::replyFinished(QNetworkReply *reply) {
     }
     reply->deleteLater();
 }
-// void WeatherApi::replyFinished(QNetworkReply *reply) {
-//     if (reply->error()) {
-//         qDebug() << "Network error:" << reply->errorString();
-//         return;
-//     }
-
-//     QByteArray responseData = reply->readAll();
-
-//     switch (this->currentRequestType) {
-//     case CurrentWeather:
-//         parseWeatherData(responseData);
-//         break;
-//     case WeatherForecast:
-//         parseForecastData(responseData);
-//         break;
-//     }
-
-//     reply->deleteLater();
-// }
 
 
 void WeatherApi::makeRequestForData(){
