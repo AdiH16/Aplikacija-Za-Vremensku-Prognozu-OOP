@@ -9,7 +9,9 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
-
+    Qt::WindowFlags flags = windowFlags();
+    Qt::WindowFlags disableFullscreen = Qt::WindowMaximizeButtonHint;
+    setWindowFlags(flags & ~disableFullscreen);
     favoriteButton = new QPushButton();
     favoriteButton->setIcon(QIcon(":/images/star_hollow.png"));
     favoriteButton->setIconSize(QSize(28, 28));
@@ -28,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
                                   "QPushButton:pressed {"
                                   "background-color: rgba(255, 255, 255, 20);"
                                   "}");
-    scrollStep = 155;
+    scrollStep = 156;
 
     //setupSevenDayForecastUi();
     setupHourlyForecast();
@@ -95,13 +97,15 @@ void MainWindow::updateCurrentWeather(const WeatherDataALL& data) {
     ui->city->setText(data.getCity());
     ui->temperature->setText(QString::number(data.getTemperature()) + "°C");
     ui->condition->setText(data.getDescription().toUpper());
+    ui->currentWeatherCondition->setText(data.getConditionAsString().toUpper());
+    ui->currentWeatherCondition->setAlignment(Qt::AlignCenter);
     humidityValueLabel->setText(QString::number(data.getHumidity()) + '%');
     windValueLabel->setText(QString::number(data.getwindSpeed()) + " km/h");
     sunriseValueLabel->setText(data.getSunrise());
     sunsetValueLabel->setText(data.getSunset());
     uvValueLabel->setText(QString::number(data.getVisibility()) + " m");
-    int w = ui->weatherIcon->width();
-    int h = ui->weatherIcon->height();
+    //int w = ui->weatherIcon->width();
+    //int h = ui->weatherIcon->height();
     //ui->weatherIcon->setPixmap(data.getIcon().scaled(w, h, Qt::KeepAspectRatio));
     QString iconPath = ":/images/" + data.getIcon() + ".png"; // Pretpostavljamo da su ikone u resources fajlu
     QPixmap icon(iconPath);
@@ -110,6 +114,7 @@ void MainWindow::updateCurrentWeather(const WeatherDataALL& data) {
     } else {
         qDebug() << "Ikonica nije nađena za: " << data.getIcon();
     }
+    ui->weatherIcon->setAlignment(Qt::AlignCenter);
 }
 
 void MainWindow::onFavoriteCityChanged(const QString &cityName) {
@@ -308,6 +313,7 @@ void MainWindow::setupSevenDayForecastUi() {
 // }
 void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastData) {
     QGridLayout *gridLayout = qobject_cast<QGridLayout*>(ui->forecastGrid->layout());
+    //ui->forecastGrid->setStyleSheet("border:1px solid white;");
     if (!gridLayout) {
         gridLayout = new QGridLayout(ui->forecastGrid);
         ui->forecastGrid->setLayout(gridLayout);
@@ -326,6 +332,8 @@ void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastD
         dayName[0] = dayName[0].toUpper();
         QLabel *dayLabel = new QLabel(dayName);
         dayLabel->setAlignment(Qt::AlignCenter);
+        QString textStyle = "color: white; font-weight: bold";
+        dayLabel->setStyleSheet(textStyle);
 
         // Provjeravamo da li je putanja ikone validna
         QString iconPath = ":/images/" + data.getIcon() + ".png";
@@ -340,9 +348,11 @@ void MainWindow::updateSevenDayForecast(const QVector<WeatherDataALL>& forecastD
 
         QLabel *chanceOfRainLabel = new QLabel(QString::number(data.getHumidity()) + "%");
         chanceOfRainLabel->setAlignment(Qt::AlignCenter);
+        chanceOfRainLabel->setStyleSheet(textStyle);
 
         QLabel *temperatureLabel = new QLabel(QString::number(data.getTemperature()) + "°C");
         temperatureLabel->setAlignment(Qt::AlignCenter);
+        temperatureLabel->setStyleSheet(textStyle);
 
         gridLayout->addWidget(dayLabel, i, 0);
         gridLayout->addWidget(iconLabel, i, 1);
@@ -388,28 +398,66 @@ void MainWindow::setupHourlyForecast() {
 void MainWindow::setupWeatherDetailsUi() {
     QGridLayout *gridLayout = new QGridLayout(ui->details);
 
-    QIcon uvIcon;
-    QIcon humidityIcon;
-    QIcon windIcon;
-    QIcon sunriseIcon;
-    QIcon sunsetIcon;
+    QIcon uvIcon = QIcon(":/images/802067.png");
+    QIcon humidityIcon = QIcon(":/images/4148460.png");
+    QIcon windIcon = QIcon(":/images/172922.png");
+    QIcon sunriseIcon = QIcon(":/images/sunrise.png");
+    QIcon sunsetIcon = QIcon(":/images/sunsets.png");
 
     QWidget *uvWidget = createDetailWidget("Visibilty", "0", uvIcon, &uvValueLabel);
     QWidget *humidityWidget = createDetailWidget("Humidity", "81%", humidityIcon, &humidityValueLabel);
     QWidget *windWidget = createDetailWidget("Wind", "3 km/h", windIcon, &windValueLabel);
 
     QWidget *sunWidget = new QWidget();
-    QVBoxLayout *sunLayout = new QVBoxLayout(sunWidget);
+    QGridLayout *sunLayout = new QGridLayout();
+
+    // Set the grid layout to have fixed column sizes to ensure centering
+    sunLayout->setColumnMinimumWidth(0, 100); // Adjust the minimum width as needed
+    sunLayout->setColumnMinimumWidth(1, 100); // Adjust the minimum width as needed
+
     QLabel *sunriseLabel = new QLabel();
     QLabel *sunsetLabel = new QLabel();
     sunriseLabel->setPixmap(sunriseIcon.pixmap(50, 50));
     sunsetLabel->setPixmap(sunsetIcon.pixmap(50, 50));
+    sunriseLabel->setAlignment(Qt::AlignCenter);
+    sunsetLabel->setAlignment(Qt::AlignCenter);
 
-    sunLayout->addWidget(sunriseLabel);
-    sunLayout->addWidget(sunriseValueLabel = new QLabel("07:23"));
-    sunLayout->addWidget(sunsetLabel);
-    sunLayout->addWidget(sunsetValueLabel = new QLabel("18:24"));
-    sunWidget->setStyleSheet("background-color: #333; color: white; border-radius: 10px;");
+    QLabel *sunriseLabelText = new QLabel("Sunrise");
+    QLabel *sunsetLabelText = new QLabel("Sunset");
+
+    // Set the labels to use the same alignment and styling
+    QString textStyle = "font-weight: bold; color: #ccc; text-align: center;";
+    sunriseLabelText->setStyleSheet(textStyle);
+    sunsetLabelText->setStyleSheet(textStyle);
+    sunriseLabelText->setAlignment(Qt::AlignCenter);
+    sunsetLabelText->setAlignment(Qt::AlignCenter);
+
+    // Initialize the labels for sunrise and sunset times
+    sunriseValueLabel = new QLabel("07:23");
+    sunsetValueLabel = new QLabel("18:24");
+
+    QString valueLabelStyle = "color: white; text-align: center; font-weight: bold;";
+    sunriseValueLabel->setStyleSheet(valueLabelStyle);
+    sunsetValueLabel->setStyleSheet(valueLabelStyle);
+    sunriseValueLabel->setAlignment(Qt::AlignCenter);
+    sunsetValueLabel->setAlignment(Qt::AlignCenter);
+
+    // Add widgets to the layout with proper alignment
+    sunLayout->addWidget(sunriseLabel, 0, 0);
+    sunLayout->addWidget(sunriseLabelText, 1, 0);
+    sunLayout->addWidget(sunriseValueLabel, 2, 0);
+    sunLayout->addWidget(sunsetLabel, 0, 1);
+    sunLayout->addWidget(sunsetLabelText, 1, 1);
+    sunLayout->addWidget(sunsetValueLabel, 2, 1);
+
+    sunWidget->setLayout(sunLayout); // Assign the layout to sunWidget
+
+    // Styling for sunWidget to match the desired appearance
+    sunWidget->setStyleSheet("background-color: rgb(16, 116, 164); color: white; border-radius: 10px;");
+
+    // Set uniform spacing and margins for the layout
+    sunLayout->setSpacing(5); // Adjust spacing as needed
+    sunLayout->setContentsMargins(10, 10, 10, 10); // Adjust margins as needed
 
     gridLayout->addWidget(uvWidget, 0, 0);
     gridLayout->addWidget(humidityWidget, 0, 1);
@@ -439,7 +487,7 @@ QWidget* MainWindow::createDetailWidget(const QString &titleText, const QString 
     layout->addWidget(titleLabel);
     layout->addWidget(valueLabel);
 
-    widget->setStyleSheet("background-color: #333; color: white; border-radius: 10px;");
+    widget->setStyleSheet("background-color: rgb(16, 116, 164); color: white; border-radius: 10px;");
     titleLabel->setStyleSheet("font-weight: bold; color: #ccc;");
     valueLabel->setStyleSheet("font-weight: bold;");
 
@@ -455,20 +503,26 @@ void MainWindow::updateHourlyForecast(const QVector<WeatherDataALL>& forecastDat
 
     const QSize widgetSize(150, 170); // Prilagodi ovo prema potrebama
     int brojac = 0;
+    QString textStyle = "color: white; font-weight: bold; border: none;";
+
     for (const auto &data : forecastData) {
         if(brojac == 24) // Ograničavamo na 24 sata
             break;
         QWidget *hourWidget = new QWidget(container);
         hourWidget->setFixedSize(widgetSize);
+        hourWidget->setStyleSheet("border-right: 1px solid gray; ");
         QVBoxLayout *hourLayout = new QVBoxLayout(hourWidget);
 
-        int hoursToAdd = (brojac * 3)+1; // Increment by 3 hours each iteration
+        //int hoursToAdd = (brojac * 3)+1; // Increment by 3 hours each iteration
         //QDateTime incrementedTime = QDateTime::currentDateTime().addSecs(hoursToAdd * 3600); // Convert hours to seconds
         //QLabel *timeLabel = new QLabel(incrementedTime.toString("h:mm a"), hourWidget);
         //izmjena
         QLabel *timeLabel = new QLabel(data.getDateTime().toString("HH:mm"), hourWidget);
+        timeLabel->setAlignment(Qt::AlignCenter);
+        timeLabel->setStyleSheet(textStyle);
         QLabel *tempLabel = new QLabel(QString::number(data.getTemperature()) + "°C", hourWidget);
-
+        tempLabel->setAlignment(Qt::AlignCenter);
+        tempLabel->setStyleSheet(textStyle);
         // Ovdje dodajemo ikonu
         QLabel *iconLabel = new QLabel(hourWidget);
         QString iconPath = ":/images/" + data.getIcon() + ".png"; // Pretpostavljamo da su ikone u resources fajlu
@@ -478,9 +532,12 @@ void MainWindow::updateHourlyForecast(const QVector<WeatherDataALL>& forecastDat
         } else {
             qDebug() << "Ikonica nije nađena za: " << data.getIcon();
         }
-
+        iconLabel->setAlignment(Qt::AlignCenter);
+        iconLabel->setStyleSheet(textStyle);
         hourLayout->addWidget(timeLabel);
+        hourLayout->addSpacing(10);  // Add spacing between timeLabel and iconLabel
         hourLayout->addWidget(iconLabel);
+        hourLayout->addSpacing(10);  // Add spacing between iconLabel and tempLabel
         hourLayout->addWidget(tempLabel);
 
         layout->addWidget(hourWidget);

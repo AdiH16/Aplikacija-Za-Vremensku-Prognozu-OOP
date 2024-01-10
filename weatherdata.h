@@ -18,6 +18,8 @@ public:
         Cloudy,
         Rainy,
         Snowy,
+        Clear,
+        Mist,
         Unknown
     };
     void setCurrentWeather(QString curweather);

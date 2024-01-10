@@ -14,8 +14,25 @@ void WeatherDataALL::setConditionsFromDescription(const QString &description) {
         currentCondition = Rainy;
     } else if (description.contains("cloud", Qt::CaseInsensitive)) {
         currentCondition = Cloudy;
-    } // Dodajte više uslova po potrebi
-    else {
+    } else if (description.contains("clear sky", Qt::CaseInsensitive)) {
+        currentCondition = Clear;
+    } else if (description.contains("scattered clouds", Qt::CaseInsensitive)) {
+        currentCondition = Cloudy;
+    } else if (description.contains("few clouds", Qt::CaseInsensitive)) {
+        currentCondition = Cloudy;
+    } else if (description.contains("broken clouds", Qt::CaseInsensitive)) {
+        currentCondition = Cloudy;
+    } else if (description.contains("shower rain", Qt::CaseInsensitive)) {
+        currentCondition = Rainy;
+    } else if (description.contains("rain", Qt::CaseInsensitive)) {
+        currentCondition = Rainy;
+    } else if (description.contains("thunderstorm", Qt::CaseInsensitive)) {
+        currentCondition = Rainy;
+    } else if (description.contains("snow", Qt::CaseInsensitive)) {
+        currentCondition = Snowy;
+    } else if (description.contains("mist", Qt::CaseInsensitive)) {
+        currentCondition = Mist;
+    } else {
         currentCondition = Unknown;
     }
 }
@@ -26,6 +43,8 @@ QString WeatherDataALL::getConditionAsString() const {
     case Cloudy: return "Cloudy";
     case Rainy: return "Rainy";
     case Snowy: return "Snowy";
+    case Clear: return "Clear";
+    case Mist: return "Mist";
     default: return "Unknown";
     }
 }
